@@ -29,6 +29,20 @@ from playwright.async_api import async_playwright
 # Fix encoding for Windows
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
+# ==================== 加载 .env ====================
+def _load_env():
+    """从 .env 文件加载环境变量"""
+    env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if os.path.exists(env_file):
+        with open(env_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), val.strip())
+
+_load_env()
+
 # ==================== 配置 ====================
 BASE_URL = "https://embys.vincent253.us.ci/"
 USERNAME = "kok123"
