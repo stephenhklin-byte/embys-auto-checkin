@@ -24,7 +24,7 @@ playwright install chromium
 # 单次运行
 python embys_checkin.py
 
-# 定时运行（每天 09:00）
+# 定时运行（每天 03:00）
 python embys_checkin.py --cron
 ```
 

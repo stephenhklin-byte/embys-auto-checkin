@@ -299,11 +299,11 @@ async def run_once():
 
 
 async def run_cron():
-    """定时运行：每天 09:00 执行"""
-    print("cron 模式已启动，每天 09:00 自动签到...")
+    """定时运行：每天 03:00 执行"""
+    print("cron 模式已启动，每天 03:00 自动签到...")
     while True:
         now = datetime.now()
-        target = now.replace(hour=9, minute=0, second=0, microsecond=0)
+        target = now.replace(hour=3, minute=0, second=0, microsecond=0)
         if now > target:
             target += timedelta(days=1)
 
@@ -314,7 +314,13 @@ async def run_cron():
         print(f"\n{'=' * 50}")
         print(f"定时签到: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"{'=' * 50}")
-        await run_once()
+        result = await run_once()
+
+        # 发送最终确认通知
+        if result["success"]:
+            send_telegram(f"✅ <b>Emby定时签到完成</b>\n\n时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n状态: 签到成功\n账号: {USERNAME}\n下次执行: 明天 03:00")
+        else:
+            send_telegram(f"❌ <b>Emby定时签到未成功</b>\n\n时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n账号: {USERNAME}\n请手动检查\n下次执行: 明天 03:00")
 
 
 if __name__ == "__main__":
