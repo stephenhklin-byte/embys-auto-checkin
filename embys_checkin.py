@@ -166,6 +166,38 @@ async def login(page):
     return True
 
 
+async def dismiss_dialogs(page):
+    """关闭可能遮挡页面的通知弹窗（MUI Dialog）"""
+    try:
+        # 查找弹窗中的"全部跳过"或"跳过"或"关闭"按钮并点击
+        for text in ["全部跳过", "跳过", "关闭", "知道了", "确定", "OK"]:
+            clicked = await page.evaluate("""(btnText) => {
+                const buttons = Array.from(document.querySelectorAll('button'));
+                for (const b of buttons) {
+                    const t = (b.textContent || '').trim();
+                    const inDialog = !!b.closest('[role="dialog"], .MuiDialog-root');
+                    if (inDialog && t.includes(btnText)) {
+                        b.click();
+                        return true;
+                    }
+                }
+                // 找不到弹窗内按钮，尝试任意匹配文本的按钮
+                for (const b of buttons) {
+                    const t = (b.textContent || '').trim();
+                    if (t === btnText) {
+                        b.click();
+                        return true;
+                    }
+                }
+                return false;
+            }""", text)
+            if clicked:
+                print(f"  已关闭通知弹窗: {text}")
+                await page.wait_for_timeout(1000)
+    except Exception as e:
+        print(f"  ⚠️ 关闭弹窗异常: {e}")
+
+
 async def check_in(page):
     """执行签到"""
     print("[2/3] 正在签到...")
@@ -174,6 +206,10 @@ async def check_in(page):
     except:
         pass
     await page.wait_for_timeout(2000)
+
+    # 关闭可能遮挡的弹窗
+    await dismiss_dialogs(page)
+    await page.wait_for_timeout(500)
 
     # 查找签到按钮
     sign_button = None
@@ -226,6 +262,10 @@ async def verify_checkin(page):
     except:
         pass
     await page.wait_for_timeout(2000)
+
+    # 关闭可能遮挡的弹窗
+    await dismiss_dialogs(page)
+    await page.wait_for_timeout(500)
 
     result = await page.evaluate("""() => {
         const btns = Array.from(document.querySelectorAll('button'));
